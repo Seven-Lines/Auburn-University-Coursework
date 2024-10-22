@@ -169,8 +169,18 @@ class ProgrammingAssignment1 {
    // Function to implement Insertion Sort.
    // Input Arguments - data: array to sort, n: number of elements in array 
    // Output: Sorted array (Ascending Order). 
-   static int[] insertionSort(int[] data, int n){
-      //TODO: Your implementation of Insertion Sort comes here. 
+   static int[] insertionSort(int[] data, int n) {
+      for (int i = 1; i < n; i++) {
+         int key = data[i];
+         int j = i - 1;
+         
+         while (j >= 0 && data[j] > key) {
+               data[j + 1] = data[j];
+               j = j - 1;
+         }
+         
+         data[j + 1] = key;
+      }
       return data;
    }
 
