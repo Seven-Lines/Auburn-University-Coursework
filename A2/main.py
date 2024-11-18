@@ -74,27 +74,29 @@ def main():
             return
 
     #-| Validate Nodes and Execute alg ---------------------------------------|
-    result = None
+    distance = None
     elapsed_time_ms = 0
 
     if alg == "bfs":
         start_time = time.perf_counter() 
-        result = bfs(graph, src, tgt)
+        distance = bfs(graph, src, tgt)
         elapsed_time_ms = (time.perf_counter() - start_time) * 1000  
     elif alg == "dfs":
         start_time = time.perf_counter() 
-        result = dfs(graph, src, tgt)
+        distance = dfs(graph, src, tgt)
         elapsed_time_ms = (time.perf_counter() - start_time) * 1000  
     else:
         print("Error: Invalid algorithm choice. Please choose BFS or DFS.")
         return
 
     #-| Display Result ------------------------------------------------------------|
-    if result != -1:
-        print(f"A path exists between {src} and {tgt} using {alg.upper()}.")
-        print(f"Time taken: {elapsed_time_ms:.4f} ms.")
+    if distance != -1:
+        print(
+            f"\n\033[92mA path exists between {src} and {tgt} using {alg.upper()}.\033[0m"
+            f"\n\033[1mTime taken:\033[0m {elapsed_time_ms:.4f} ms. \033[1mDistance:\033[0m {distance}\n"
+        )
     else:
-        print(f"No path exists between {src} and {tgt} using {alg.upper()}.")
+        print(f"\033[91mNo path exists between {src} and {tgt}.\033[0m")
 
 if __name__ == "__main__":
     main()
