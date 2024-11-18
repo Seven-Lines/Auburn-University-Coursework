@@ -5,31 +5,31 @@ from collections import deque
 
 def bfs(graph, start, target):
     visited = set()
-    queue = [(start, 0)]  # (node, distance)
+    queue = [(start, 0)]  
 
     while queue:
-        node, distance = queue.pop(0)  # Dequeue
+        node, distance = queue.pop(0) 
         if node == target:
             return distance
         if node not in visited:
             visited.add(node)
             for neighbor in graph[node]:
-                queue.append((neighbor, distance + 1))  # Enqueue
+                queue.append((neighbor, distance + 1)) 
 
     return -1  # If no path found
 
 def dfs(graph, start, target):
     visited = set()
-    stack = [(start, 0)]  # (node, distance)
+    stack = [(start, 0)] 
 
     while stack:
-        node, distance = stack.pop()  # Pop from stack
+        node, distance = stack.pop() 
         if node == target:
             return distance
         if node not in visited:
             visited.add(node)
             for neighbor in graph[node]:
-                stack.append((neighbor, distance + 1))  # Push onto stack
+                stack.append((neighbor, distance + 1)) 
 
     return -1  # If no path found
 
@@ -78,13 +78,13 @@ def main():
     elapsed_time_ms = 0
 
     if alg == "bfs":
-        start_time = time.perf_counter()  # High-resolution timer
+        start_time = time.perf_counter() 
         result = bfs(graph, src, tgt)
-        elapsed_time_ms = (time.perf_counter() - start_time) * 1000  # Convert to milliseconds
+        elapsed_time_ms = (time.perf_counter() - start_time) * 1000  
     elif alg == "dfs":
-        start_time = time.perf_counter()  # High-resolution timer
+        start_time = time.perf_counter() 
         result = dfs(graph, src, tgt)
-        elapsed_time_ms = (time.perf_counter() - start_time) * 1000  # Convert to milliseconds
+        elapsed_time_ms = (time.perf_counter() - start_time) * 1000  
     else:
         print("Error: Invalid algorithm choice. Please choose BFS or DFS.")
         return
