@@ -10,47 +10,53 @@ from collections import deque
 
 def bfs(graph, start, target):
     visited = set()
-    queue = [(start, 0)]  
-    parent = {start: None}  
+    queue = [(start, 0)] 
+    parent = {start: None} 
+    nodes_explored = 0  
 
     while queue:
-        node, distance = queue.pop(0)  # Dequeue - FIFO
+        node, depth = queue.pop(0)  # Dequeue - FIFO
+        nodes_explored += 1 
         if node == target:
             path = []
             while node:
                 path.append(node)
                 node = parent[node]
-            return distance, path[::-1] # Reverse the path to get start to target
+            return nodes_explored, path[::-1]  # Reverse the path to get start to target
         if node not in visited:
             visited.add(node)
             for neighbor in graph[node]:
                 if neighbor not in visited and neighbor not in parent:
                     parent[neighbor] = node
-                    queue.append((neighbor, distance + 1))  # Enqueue
+                    queue.append((neighbor, depth + 1))  # Enqueue
 
-    return -1, []  # If no path found
+    return nodes_explored, []  # If no path found
+
 
 def dfs(graph, start, target):
     visited = set()
-    stack = [(start, 0)] 
-    parent = {start: None}  
+    stack = [(start, 0)]
+    parent = {start: None}
+    nodes_explored = 0
 
     while stack:
-        node, distance = stack.pop()  # Dequeue - LIFO
+        node, depth = stack.pop()  # Dequeue - LIFO
+        nodes_explored += 1  # Increment node exploration count
         if node == target:
             path = []
             while node:
                 path.append(node)
                 node = parent[node]
-            return distance, path[::-1]  # Reverse the path to get start to target
+            return nodes_explored, path[::-1]  # Reverse the path to get start to target
         if node not in visited:
             visited.add(node)
             for neighbor in graph[node]:
                 if neighbor not in visited and neighbor not in parent:
-                    parent[neighbor] = node 
-                    stack.append((neighbor, distance + 1))  # Enqueue
+                    parent[neighbor] = node
+                    stack.append((neighbor, depth + 1))  # Push onto stack
 
-    return -1, []  # If no path found
+    return nodes_explored, []  # If no path found
+
 
 def main():
     #-| Read Command-Line Arguments ------------------------------------------------|
@@ -114,7 +120,7 @@ def main():
         print(
             f"\n\033[1m\n\033[92mA path exists between {src} and {tgt} ({alg.upper()}).\033[0m"
             f"\n\033[1mTime taken:\033[0m {elapsed_time_ms:.4f} ms\n"
-            f"\033[1mDistance:\033[0m {distance} nodes\n"
+            f"\033[1mNodes Explored:\033[0m {distance}\n"
             f"\033[1mPath:\033[0m {' → '.join([node.split('_')[-1] for node in path])}\n"
         )
     else:
