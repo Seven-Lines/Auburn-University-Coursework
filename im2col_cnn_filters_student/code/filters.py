@@ -1,5 +1,5 @@
 import numpy as np
-from im2col import im2col
+from im2col import im2col, _pair
 
 def conv2d_im2col(img, weight, bias=0.0, stride=1, padding=0, dilation=1):
     """TODO: Convolve a grayscale image with filters using im2col.
@@ -15,7 +15,35 @@ def conv2d_im2col(img, weight, bias=0.0, stride=1, padding=0, dilation=1):
       3) Add bias and reshape back to (C_out, H_out, W_out).
     """
     # TODO: your code here
-    raise NotImplementedError("Implement conv2d_im2col.")
+    if img.ndim != 2:
+        raise ValueError("img must be 2D (grayscale)")
+
+    C_out, C_in, kH, kW = weight.shape
+    if C_in != 1:
+        raise ValueError("Expected single-channel weights with shape (C_out, 1, kH, kW)")
+
+    sH, sW = _pair(stride)
+    pH, pW = _pair(padding)
+    dH, dW = _pair(dilation)
+
+    cols = im2col(img[np.newaxis, :, :], kH, kW, stride=stride, padding=padding, dilation=dilation)
+
+    kH_eff = (kH - 1) * dH + 1
+    kW_eff = (kW - 1) * dW + 1
+    H, W = img.shape
+    H_out = (H + 2 * pH - kH_eff) // sH + 1
+    W_out = (W + 2 * pW - kW_eff) // sW + 1
+
+    weight_mat = weight.reshape(C_out, -1)
+    out = weight_mat @ cols
+
+    if np.isscalar(bias):
+        out += bias
+    else:
+        bias = np.asarray(bias).reshape(-1, 1)
+        out += bias
+
+    return out.reshape(C_out, H_out, W_out)
 
 def kernels():
     gaussian_3x3 = (1/16.0) * np.array([[1,2,1],[2,4,2],[1,2,1]], dtype=np.float32)
