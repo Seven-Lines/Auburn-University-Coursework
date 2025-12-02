@@ -125,14 +125,12 @@ def heuristic_misplaced(state: State) -> int:
     """
     count = 0
 
-    # TODO: fill in the body of this loop
+    # Count tiles that are out of place, ignoring the blank (0)
     for i, tile in enumerate(state):
-        # Example structure:
-        # if tile == 0:
-        #     continue
-        # if tile is not in its goal position:
-        #     increase count
-        pass
+        if tile == 0:
+            continue
+        if tile != GOAL_STATE[i]:
+            count += 1
 
     return count
 
@@ -155,15 +153,13 @@ def heuristic_circular_distance(state: State) -> int:
     N = 16
     total = 0
 
-    # TODO: fill in the body of this loop
+    # Sum minimal circular distance for each non-blank tile
     for i, tile in enumerate(state):
-        # Example structure:
-        # if tile == 0:
-        #     continue
-        # g = GOAL_POS[tile]
-        # d = abs(i - g)
-        # total += min(d, N - d)
-        pass
+        if tile == 0:
+            continue
+        g = GOAL_POS[tile]
+        d = abs(i - g)
+        total += min(d, N - d)
 
     return total
 
@@ -266,21 +262,30 @@ def breadth_first_search(problem: Circular16Puzzle) -> SearchResult | None:
     max_frontier_size = 1
 
     while frontier:
-        # TODO: update max_frontier_size appropriately
+        # Update max frontier size
         max_frontier_size = max(max_frontier_size, len(frontier))
 
-        # TODO: pop from frontier and expand
+        # Pop from frontier and expand
         state = frontier.popleft()
         nodes_expanded += 1
 
-        # TODO: generate successors and process them
+        # Generate successors
         for next_state, action, cost in problem.successors(state):
-            # Example structure:
-            # if next_state already visited: continue
-            # record parent[next_state] = (state, action)
-            # if next_state is goal: reconstruct path and return result
-            # mark visited and add to frontier
-            pass
+            # Skip already visited states
+            if next_state in visited:
+                continue
+
+            # Record how we reached next_state
+            parent[next_state] = (state, action)
+
+            # If this successor is the goal, reconstruct and return
+            if problem.is_goal(next_state):
+                actions = reconstruct_path(parent, start, next_state)
+                return make_result(actions, next_state, nodes_expanded, max_frontier_size)
+
+            # Mark visited and add to frontier
+            visited.add(next_state)
+            frontier.append(next_state)
 
     # If no solution is found
     return None
@@ -335,25 +340,27 @@ def uniform_cost_search(problem: Circular16Puzzle) -> SearchResult | None:
     while frontier:
         max_frontier_size = max(max_frontier_size, len(frontier))
 
-        # TODO: pop the lowest-cost state from the priority queue
+        # Pop the lowest-cost state from the priority queue
         g, state = heapq.heappop(frontier)
 
-        # TODO: skip stale entries if g > best_cost[state]
-        # e.g., if g > best_cost.get(state, float("inf")): continue
+        # Skip stale entries if g > best_cost[state]
+        if g > best_cost.get(state, float("inf")):
+            continue
 
-        # TODO: goal test
-        # if problem.is_goal(state):
-        #     reconstruct and return result
+        # Goal test
+        if problem.is_goal(state):
+            actions = reconstruct_path(parent, start, state)
+            return make_result(actions, state, nodes_expanded, max_frontier_size)
 
         nodes_expanded += 1
 
-        # TODO: expand successors
+        # Expand successors
         for next_state, action, cost in problem.successors(state):
-            # new_g = g + cost
-            # if new_g improves best_cost[next_state]:
-            #     update best_cost and parent
-            #     push (new_g, next_state) on frontier
-            pass
+            new_g = g + cost
+            if new_g < best_cost.get(next_state, float("inf")):
+                best_cost[next_state] = new_g
+                parent[next_state] = (state, action)
+                heapq.heappush(frontier, (new_g, next_state))
 
     return None
 
@@ -413,22 +420,28 @@ def greedy_best_first_search(
     while frontier:
         max_frontier_size = max(max_frontier_size, len(frontier))
 
-        # TODO: pop the state with smallest heuristic value
+        # Pop the state with smallest heuristic value
         h_val, state = heapq.heappop(frontier)
 
-        # TODO: skip if already visited
-        # TODO: mark state as visited
+        # Skip if already visited
+        if state in visited:
+            continue
 
-        # TODO: goal test
+        # Mark state as visited
+        visited.add(state)
+
+        # Goal test
+        if problem.is_goal(state):
+            actions = reconstruct_path(parent, start, state)
+            return make_result(actions, state, nodes_expanded, max_frontier_size)
 
         nodes_expanded += 1
 
-        # TODO: expand successors
+        # Expand successors
         for next_state, action, cost in problem.successors(state):
-            # if next_state not in visited:
-            #     set parent[next_state] = (state, action)
-            #     push (heuristic(next_state), next_state) on frontier
-            pass
+            if next_state not in visited:
+                parent[next_state] = (state, action)
+                heapq.heappush(frontier, (heuristic(next_state), next_state))
 
     return None
 
@@ -494,23 +507,31 @@ def a_star_search(
     while frontier:
         max_frontier_size = max(max_frontier_size, len(frontier))
 
-        # TODO: pop state with smallest f
+        # Pop state with smallest f
         f, g, state = heapq.heappop(frontier)
 
-        # TODO: skip if state already in closed
-        # TODO: add state to closed
+        # Skip if state already in closed
+        if state in closed:
+            continue
 
-        # TODO: goal test
+        # Add state to closed
+        closed.add(state)
+
+        # Goal test
+        if problem.is_goal(state):
+            actions = reconstruct_path(parent, start, state)
+            return make_result(actions, state, nodes_expanded, max_frontier_size)
 
         nodes_expanded += 1
 
-        # TODO: expand successors
+        # Expand successors
         for next_state, action, cost in problem.successors(state):
-            # new_g = g + cost
-            # if new_g improves g_cost[next_state]:
-            #     update g_cost and parent
-            #     compute new_f and push (new_f, new_g, next_state) on frontier
-            pass
+            new_g = g + cost
+            if new_g < g_cost.get(next_state, float("inf")):
+                g_cost[next_state] = new_g
+                parent[next_state] = (state, action)
+                new_f = new_g + heuristic(next_state)
+                heapq.heappush(frontier, (new_f, new_g, next_state))
 
     return None
 
@@ -531,18 +552,35 @@ def run_demo() -> None:
     print(pretty_print_state(initial))
     print()
 
-    # After you implement the corresponding functions, you can uncomment
-    # these lines to test your code.
+    print("Running BFS...")
+    bfs_res = breadth_first_search(problem)
+    print("BFS result:", bfs_res)
+    print()
 
-    # print("Running BFS...")
-    # bfs_res = breadth_first_search(problem)
-    # print("BFS result:", bfs_res)
-    # print()
+    print("Running UCS...")
+    ucs_res = uniform_cost_search(problem)
+    print("UCS result:", ucs_res)
+    print()
 
-    # print("Running A* with circular distance heuristic...")
-    # astar_res = a_star_search(problem, heuristic_circular_distance)
-    # print("A* result:", astar_res)
-    # print()
+    print("Running Greedy (misplaced)...")
+    greedy_mis = greedy_best_first_search(problem, heuristic_misplaced)
+    print("Greedy (misplaced) result:", greedy_mis)
+    print()
+
+    print("Running Greedy (circular distance)...")
+    greedy_circ = greedy_best_first_search(problem, heuristic_circular_distance)
+    print("Greedy (circular) result:", greedy_circ)
+    print()
+
+    print("Running A* (misplaced)...")
+    astar_mis = a_star_search(problem, heuristic_misplaced)
+    print("A* (misplaced) result:", astar_mis)
+    print()
+
+    print("Running A* (circular distance)...")
+    astar_circ = a_star_search(problem, heuristic_circular_distance)
+    print("A* (circular) result:", astar_circ)
+    print()
 
 
 if __name__ == "__main__":
